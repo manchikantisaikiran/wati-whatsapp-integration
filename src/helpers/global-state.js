@@ -13,6 +13,7 @@ export async function setPartnerData(partnerId, token, userId) {
     const partner = partnerList.find(partner => partner.partnerId == partnerId);
     if (partner) {
         logger.info(`Partner Details already exist`);
+        return Promise.resolve(true);
     } else {
         try {
             const result = await axios.get(`${process.env.SIMPLIFYBASEURL}/customers/customersAssignedList/${userId}`, {
@@ -36,6 +37,7 @@ export async function setPartnerData(partnerId, token, userId) {
         } catch (e) {
             logger.error("Something went wrong while fetching partner contacts");
             logger.error(e);
+            
         }
     }
 }
