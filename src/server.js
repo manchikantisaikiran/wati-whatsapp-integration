@@ -30,32 +30,37 @@ io.on('connection', (socket) => {
 //webhook
 app.post('/wati/in-message', (req, res) => {
     logger.info(`Webhook message: ${JSON.stringify(req.body)}`);
-    try{
-        const matchedCustomerList = [];
-        partnerList.forEach((partner) => {
-            partner.contactsList.forEach(contact => {
-                if (contact.watiNumber == req.body.waId) {
-                    if (!matchedCustomerList.includes(contact.customerId)) {
-                        matchedCustomerList.push(contact.customerId)
-                    }
-                }
-            })
-        })
-    
-        userSessionList.forEach((session) => {
-            session.companiesIdList.forEach((companyId) => {
-                if (matchedCustomerList.includes(companyId)) {
-                    session.socketIdList.forEach((socketId) => {
-                        logger.debug('emmiting message to socket');
-                        io.to(socketId).emit('message', req.body);
-                    })
-                }
-            })
-        })
-        res.sendStatus(200);
-    }catch(e){
-        res.sendStatus(500);
-    }
-
-
+    setImmediate(() => emitSocketMessage(req.body));
+    res.sendStatus(200);
 });
+
+
+function emitSocketMessage(body) {
+    return new Promise((resolve, reject) => {
+        try {
+            const matchedCustomerList = [];
+            partnerList.forEach((partner) => {
+                partner.contactsList.forEach(contact => {
+                    if (contact.watiNumber == body.waId) {
+                        if (!matchedCustomerList.includes(contact.customerId)) {
+                            matchedCustomerList.push(contact.customerId)
+                        }
+                    }
+                })
+            })
+
+            userSessionList.forEach((session) => {
+                session.companiesIdList.forEach((companyId) => {
+                    if (matchedCustomerList.includes(companyId)) {
+                        session.socketIdList.forEach((socketId) => {
+                            logger.debug('emmiting message to socket');
+                            io.to(socketId).emit('message', body);
+                        })
+                    }
+                })
+            })
+        } catch (e) {
+            logger.error('Somwthing went wrong while emitting socket message', e);
+        }
+    })
+}
