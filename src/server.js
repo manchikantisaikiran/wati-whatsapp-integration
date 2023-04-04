@@ -17,7 +17,7 @@ const io = new Server(server, {
 
 io.on('connection', (socket) => {
 
-    
+
     logger.info(`A User Connected to the socket with User Name: ${socket.handshake.query.userName}(${socket.handshake.query.userId}) socketId: ${socket.id}`)
     addActiveSessionToUser(socket.handshake.query.userId, socket.id);
 
@@ -28,30 +28,34 @@ io.on('connection', (socket) => {
 })
 
 //webhook
-app.post('/', (req, res) => {
+app.post('/wati/in-message', (req, res) => {
     logger.info(`Webhook message: ${JSON.stringify(req.body)}`);
-    const matchedCustomerList = [];
-    partnerList.forEach((partner) => {
-        partner.contactsList.forEach(contact => {
-            if(contact.watiNumber == req.body.waId){
-                if(!matchedCustomerList.includes(contact.customerId)){
-                    matchedCustomerList.push(contact.customerId)
+    try{
+        const matchedCustomerList = [];
+        partnerList.forEach((partner) => {
+            partner.contactsList.forEach(contact => {
+                if (contact.watiNumber == req.body.waId) {
+                    if (!matchedCustomerList.includes(contact.customerId)) {
+                        matchedCustomerList.push(contact.customerId)
+                    }
                 }
-            }
+            })
         })
-    })
-
-    userSessionList.forEach((session)=>{
-        session.companiesIdList.forEach((companyId)=>{
-            if(matchedCustomerList.includes(companyId)){
-                session.socketIdList.forEach((socketId)=>{
-                    logger.debug('emmiting message to socket');
-                    io.to(socketId).emit('message', req.body);
-                })
-            }
+    
+        userSessionList.forEach((session) => {
+            session.companiesIdList.forEach((companyId) => {
+                if (matchedCustomerList.includes(companyId)) {
+                    session.socketIdList.forEach((socketId) => {
+                        logger.debug('emmiting message to socket');
+                        io.to(socketId).emit('message', req.body);
+                    })
+                }
+            })
         })
-    })
+        res.sendStatus(200);
+    }catch(e){
+        res.sendStatus(500);
+    }
 
 
-    res.sendStatus(200);
 });

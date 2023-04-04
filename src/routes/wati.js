@@ -22,7 +22,6 @@ watiRouter.get('/contact-list', auth, async (req, res, next) => {
         }
 
         const filteredList = await getContactListLogic(req);
-        console.log(filteredList);
         res.status(200).send({ contact_list: filteredList });
 
     } catch (e) {
@@ -109,6 +108,30 @@ watiRouter.post('/add-contact', auth, async (req, res, next) => {
             }
         })
 
+        const templateMessageCallResponse = await axios.post(`${process.env.WATIBASEURL}/sendTemplateMessage?whatsappNumber=${req.body.number}`, {
+            parameters: [{ name: 'name', value: 'value' }],
+            broadcast_name: 'test_icde',
+            template_name: 'test_icde'
+        }, {
+            headers: {
+                Authorization: currentPartner.partnerWatiKey,
+                'Content-Type': 'application/json'
+            }
+        })
+
+        res.status(201).send(templateMessageCallResponse.data);
+    } catch (e) {
+        console.log('error:' + e);
+        next({ err: e, logMessage: error.response })
+    }
+})
+
+
+// API TO SEND A TEMPLATE MESSAGE
+watiRouter.post('/send-template', auth, async (req, res, next) => {
+    const currentPartner = partnerList.find((partner) => partner.partnerId == req.partnerId);
+
+    try {
         const templateMessageCallResponse = await axios.post(`${process.env.WATIBASEURL}/sendTemplateMessage?whatsappNumber=${req.body.number}`, {
             parameters: [{ name: 'name', value: 'value' }],
             broadcast_name: 'test_icde',

@@ -10,7 +10,6 @@ import logger from "../config/logger.js";
 // API TO STORE LOGGED IN USERS DATA
 router.post('/store-loggedin-users', auth, async (req, res, next) => {
     try {
-
         // let customersResponse = await axios.get(`${process.env.SIMPLIFYBASEURL}/dashboard/user/customers`, {
         //     headers: {
         //         Authorization: req.token,

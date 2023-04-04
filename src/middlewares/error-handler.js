@@ -11,5 +11,6 @@ export function errorHandler(err, req, res, next) {
         return;
     }
 
+    console.log(err);
     res.status(500).send(err);
 }

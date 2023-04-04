@@ -17,7 +17,7 @@ log4js.configure({
     },
     categories: {
         default: {
-            appenders: ["out", "file"],
+            appenders: ["file"],
             level: "debug"
         }
     },
